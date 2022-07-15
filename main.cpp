@@ -1,8 +1,14 @@
 #include <iostream>
 #include <fstream>
+#include "lexer.h"
 
 void eval(const std::string& code) {
+    Lexer lexer(code);
+    auto tokens = lexer.getTokens();
 
+    for (auto& token : tokens) {
+        std::cout << token.lexeme << std::endl;
+    }
 }
 
 void repl() {
@@ -10,7 +16,7 @@ void repl() {
     std::string code;
 
     while (true) {
-        std::cout << "> ";
+        std::cout << ">> ";
         std::getline(std::cin, code);
         eval(code);
     }
