@@ -1,15 +1,7 @@
 #include "lexer.h"
 
-bool is_digit(char c) {
-    return c >= '0' && c <= '9';
-}
-
-bool is_alpha(char c) {
-    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
-}
-
 Token Lexer::nextToken() {
-    if (peek_next() == '\0') {
+    if (peek() == '\0') {
         return Token(TokenType::Eof, "");
     }
 
@@ -18,9 +10,6 @@ Token Lexer::nextToken() {
     start = current;
 
     auto ch = advance();
-
-    if (is_digit(ch)) return number();
-    if (is_alpha(ch)) return identifier();
 
     switch (ch) {
         case '(': return Token(TokenType::LeftParen, "("); break;
@@ -71,9 +60,16 @@ Token Lexer::nextToken() {
             return Token(TokenType::Slash, "/");
         } break;
         case '"': { return string(); } break;
+        default: {
+            if (isdigit(ch)) {
+                return number();
+            } else if (isalpha(ch)) {
+                return identifier();
+            } else {
+                return Token(TokenType::Unknown, std::string(1, ch));
+            }
+        }
     }
-
-    return Token(TokenType::Unknown, std::string(1, ch));
 }
 
 std::vector<Token> Lexer::getTokens() {
@@ -144,20 +140,20 @@ char Lexer::advance() {
 }
 
 Token Lexer::identifier() {
-    while (is_alpha(peek()) || is_digit(peek())) {
+    while (isalpha(peek()) || isdigit(peek())) {
         advance();
     }
     return Token(TokenType::Identifier, input.substr(start, current - start));
 }
 
 Token Lexer::number() {
-    while (is_digit(peek())) {
+    while (isdigit(peek())) {
         advance();
     }
     
-    if (peek() == '.' && is_digit(peek_next())) {
+    if (peek() == '.' && isdigit(peek_next())) {
         advance();
-        while (is_digit(peek())) {
+        while (isdigit(peek())) {
             advance();
         }
     }
