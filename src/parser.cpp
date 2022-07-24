@@ -46,9 +46,9 @@ std::unique_ptr<Expr> Parser::parse() {
 std::unique_ptr<Expr> Parser::term() {
     std::unique_ptr<Expr> left = factor();
     while (match(TokenType::Plus) || match(TokenType::Minus)) {
-        Token op = tokens[current - 1];
+        Token op = previous();
         std::unique_ptr<Expr> right = factor();
-        left = std::make_unique<Binary>(std::move(left), op, std::move(right));
+        left = std::make_unique<Binary>(op, std::move(left), std::move(right));
     }
     return left;
 }
@@ -56,7 +56,7 @@ std::unique_ptr<Expr> Parser::term() {
 std::unique_ptr<Expr> Parser::factor() {
     std::unique_ptr<Expr> left = unary();
     while (match(TokenType::Star) || match(TokenType::Slash)) {
-        Token op = tokens[current - 1];
+        Token op = previous();
         std::unique_ptr<Expr> right = unary();
         left = std::make_unique<Binary>(std::move(left), op, std::move(right));
     }
@@ -65,7 +65,7 @@ std::unique_ptr<Expr> Parser::factor() {
 
 std::unique_ptr<Expr> Parser::unary() {
     if (match(TokenType::Plus) || match(TokenType::Minus)) {
-        Token op = tokens[current - 1];
+        Token op = previous();
         std::unique_ptr<Expr> expr = unary();
         return std::make_unique<Unary>(op, std::move(expr));
     }
