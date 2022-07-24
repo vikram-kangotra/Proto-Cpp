@@ -48,7 +48,7 @@ std::unique_ptr<Expr> Parser::term() {
     while (match(TokenType::Plus) || match(TokenType::Minus)) {
         Token op = previous();
         std::unique_ptr<Expr> right = factor();
-        left = std::make_unique<Binary>(op, std::move(left), std::move(right));
+        left = std::make_unique<Binary>(std::move(left), op, std::move(right));
     }
     return left;
 }
