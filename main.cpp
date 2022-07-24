@@ -1,13 +1,21 @@
 #include <iostream>
 #include <fstream>
 #include "lexer.h"
+#include "parser.h"
+#include "astPrinter.h"
 
 void eval(const std::string& code) {
     Lexer lexer(code);
     auto tokens = lexer.getTokens();
 
-    for (auto& token : tokens) {
-        std::cout << token.lexeme << std::endl;
+    Parser parser(tokens);
+
+    try {
+        auto expr = parser.parse();
+        ASTPrinter print(expr);
+        std::cout << std::endl;
+    } catch (std::exception& e) {
+        std::cout << e.what() << std::endl;
     }
 }
 
