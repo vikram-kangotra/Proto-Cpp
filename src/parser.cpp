@@ -74,7 +74,7 @@ std::unique_ptr<Expr> Parser::unary() {
 
 std::unique_ptr<Expr> Parser::primary() {
     if (match(TokenType::Number)) {
-        return std::make_unique<Literal>(tokens[current - 1]);
+        return std::make_unique<Literal>(previous());
     }
     if (match(TokenType::LeftParen)) {
         std::unique_ptr<Expr> expr = parse();
