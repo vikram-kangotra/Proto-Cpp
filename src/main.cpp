@@ -12,8 +12,8 @@ void eval(const std::string& code) {
 
     try {
         auto expr = parser.parse();
-        ASTPrinter print(expr);
-        std::cout << std::endl;
+        ASTPrinter print;
+        std::cout << print.eval(expr) << std::endl;
     } catch (std::exception& e) {
         std::cout << e.what() << std::endl;
     }
