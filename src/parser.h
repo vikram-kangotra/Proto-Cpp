@@ -17,9 +17,11 @@ class Parser {
         Token peek();
         Token advance();
         Token previous();
+        bool eat(TokenType type);
         bool check(TokenType type);
         bool match(TokenType type);
 
+        std::unique_ptr<Expr> expr();
         std::unique_ptr<Expr> term();
         std::unique_ptr<Expr> factor();
         std::unique_ptr<Expr> unary();
