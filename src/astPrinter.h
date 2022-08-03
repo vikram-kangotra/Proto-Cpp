@@ -5,26 +5,36 @@
 
 class ASTPrinter : public Visitor {
     public:
-        ASTPrinter(const std::unique_ptr<Expr>& expr) {
-            expr->accept(this);
+        float eval(const std::unique_ptr<Expr>& expr) {
+            return expr->accept(this);
         }
 
     private:
-        void visitLiteralExpr(Literal* literal) override {
-            std::cout << literal->getToken().lexeme;
+        float visitLiteralExpr(Literal* literal) override {
+            return std::stof(literal->getToken().lexeme);
         }
 
-        void visitUnaryExpr(Unary* unary) override {
-            std::cout << unary->getOperator().lexeme << "(";
-            unary->getExpr().accept(this);
-            std::cout << ")";
+        float visitUnaryExpr(Unary* unary) override {
+            if (unary->getOperator().type == TokenType::Minus)
+                return -unary->getExpr().accept(this);
+            return unary->getExpr().accept(this);
         }
 
-        void visitBinaryExpr(Binary* binary) override {
-            std::cout << "(";
-            binary->getLeft().accept(this);
-            std::cout << " " << binary->getOperator().lexeme << " ";
-            binary->getRight().accept(this);
-            std::cout << ")";
+        float visitBinaryExpr(Binary* binary) override {
+            auto left = binary->getLeft().accept(this);
+            auto right = binary->getRight().accept(this);
+            switch (binary->getOperator().type) {
+                case TokenType::Plus:
+                    return left + right;
+                case TokenType::Minus:
+                    return left - right;
+                case TokenType::Star:
+                    return left * right;
+                case TokenType::Slash:
+                    return left / right;
+                default:
+                    return 0;
+            }
+            return 0;
         }
 };
