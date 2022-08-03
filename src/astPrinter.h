@@ -15,15 +15,15 @@ class ASTPrinter : public Visitor {
         }
 
         float visitUnaryExpr(Unary* unary) override {
-            if (unary->getOperator().type == TokenType::Minus)
-                return -unary->getExpr().accept(this);
-            return unary->getExpr().accept(this);
+            if (unary->getOp().type == TokenType::Minus)
+                return -unary->getRight().accept(this);
+            return unary->getRight().accept(this);
         }
 
         float visitBinaryExpr(Binary* binary) override {
             auto left = binary->getLeft().accept(this);
             auto right = binary->getRight().accept(this);
-            switch (binary->getOperator().type) {
+            switch (binary->getOp().type) {
                 case TokenType::Plus:
                     return left + right;
                 case TokenType::Minus:
