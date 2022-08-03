@@ -27,6 +27,14 @@ Token Parser::previous() {
     return tokens[current - 1];
 }
 
+bool Parser::eat(TokenType type) {
+    if (peek().type == type) {
+        advance();
+        return true;
+    }
+    return false;
+}
+
 bool Parser::check(TokenType type) {
     return !atEnd() && peek().type == type;
 }
@@ -40,6 +48,10 @@ bool Parser::match(TokenType type) {
 }
 
 std::unique_ptr<Expr> Parser::parse() {
+    return expr();
+}
+
+std::unique_ptr<Expr> Parser::expr() {
     return term();
 }
 
@@ -68,6 +80,11 @@ std::unique_ptr<Expr> Parser::unary() {
         Token op = previous();
         std::unique_ptr<Expr> expr = unary();
         return std::make_unique<Unary>(op, std::move(expr));
+    }
+    if (eat(TokenType::LeftParen)) {
+        std::unique_ptr<Expr> exp = expr();
+        eat(TokenType::RightParen);
+        return exp;
     }
     return primary();
 }
