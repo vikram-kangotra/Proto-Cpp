@@ -5,21 +5,21 @@
 
 class Visitor {
     public:
-        virtual void visitLiteralExpr(class Literal* literal) = 0;
-        virtual void visitUnaryExpr(class Unary* unary) = 0;
-        virtual void visitBinaryExpr(class Binary* binary) = 0;
+        virtual float visitLiteralExpr(class Literal* literal) = 0;
+        virtual float visitUnaryExpr(class Unary* unary) = 0;
+        virtual float visitBinaryExpr(class Binary* binary) = 0;
 };
 
 class Expr {
     public:
-        virtual void accept(Visitor* visitor) = 0;
+        virtual float accept(Visitor* visitor) = 0;
 };
 
 class Literal : public Expr {
     public:
         Literal(Token token) : token{token} {}
-        void accept(Visitor* visitor) override {
-            visitor->visitLiteralExpr(this);
+        float accept(Visitor* visitor) override {
+            return visitor->visitLiteralExpr(this);
         }
 
         Token& getToken() { return token; }
@@ -32,8 +32,8 @@ class Unary : public Expr {
         Unary(Token op, std::unique_ptr<Expr>&& expr)
         : op{op}, expr{std::move(expr)} {}
 
-        void accept(Visitor* visitor) override {
-            visitor->visitUnaryExpr(this);
+        float accept(Visitor* visitor) override {
+            return visitor->visitUnaryExpr(this);
         }
 
         Token& getOperator() { return op; }
@@ -48,8 +48,8 @@ class Binary : public Expr {
         Binary(std::unique_ptr<Expr>&& left, Token op, std::unique_ptr<Expr>&& right)
         : left{std::move(left)}, op{op}, right{std::move(right)} {}
 
-        void accept(Visitor* visitor) override {
-            visitor->visitBinaryExpr(this);
+        float accept(Visitor* visitor) override {
+            return visitor->visitBinaryExpr(this);
         }
 
         Expr& getLeft() { return *left; }
