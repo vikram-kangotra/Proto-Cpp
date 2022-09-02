@@ -1,10 +1,11 @@
 #pragma once
 
 #include <string>
+#include <any>
 
 enum TokenType {
     LeftParen, RightParen, LeftBrace, RightBrace, 
-    Comma, Dot, Minus, Plus, Semicolon, Slash, Star,
+    Comma, Dot, Minus, Plus, Semicolon, Slash, Star, 
 
     Bang, BangEqual,
     Equal, EqualEqual,
@@ -13,8 +14,10 @@ enum TokenType {
 
     Identifier, String, Number,
 
-    And, Class, Else, False, Fun, For, If, Nil, Or,
-    Print, Return, Super, This, True, Var, While,
+    And, Break, Class, Continue, Do, Else, ElseIf, 
+    False, Fun, For, If, In, Let, Nil, Or,
+    Print, Return, Super, Static, Struct, Switch, 
+    This, True, Var, While,
 
     Eof, Unknown
 };
@@ -22,6 +25,7 @@ enum TokenType {
 struct Token {
     TokenType type;
     std::string lexeme;
+    std::any literal;
 
-    Token(TokenType type, std::string lexeme) : type(type), lexeme(lexeme) {}
+    Token(TokenType type, std::string lexeme, std::any literal = nullptr) : type{type}, lexeme{lexeme}, literal{literal} {}
 };
