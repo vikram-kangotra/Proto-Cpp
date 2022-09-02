@@ -2,18 +2,18 @@
 #include <fstream>
 #include "lexer.h"
 #include "parser.h"
-#include "astPrinter.h"
+#include "interpreter.h"
 
 void eval(const std::string& code) {
-    Lexer lexer(code);
+    Lexer lexer{code};
     auto tokens = lexer.getTokens();
 
-    Parser parser(tokens);
+    Parser parser{tokens};
 
     try {
-        auto expr = parser.parse();
-        ASTPrinter print;
-        std::cout << print.eval(expr) << std::endl;
+        auto statements = parser.parse();
+        Interpreter interpreter;
+        interpreter.interpret(statements);
     } catch (std::exception& e) {
         std::cout << e.what() << std::endl;
     }
@@ -52,8 +52,11 @@ void read(const std::string& path) {
 
 int main(int argc, char** argv) {
 
-    if (argc == 1) repl();
-    else read(argv[1]);
+    switch (argc) {
+        case 1: repl(); break;
+        case 2: read(argv[1]); break;
+        default: return -1;
+    }
 
     return 0;
 }
