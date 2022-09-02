@@ -1,62 +1,100 @@
 #pragma once
 
 #include <memory>
+#include <any>
 #include "token.h"
 
-class Visitor {
+class ExprVisitor {
     public:
-        virtual float visitLiteralExpr(class Literal*) = 0;
-        virtual float visitUnaryExpr(class Unary*) = 0;
-        virtual float visitBinaryExpr(class Binary*) = 0;
+        virtual std::any visitLiteralExpr(class LiteralExpr*) = 0;
+        virtual std::any visitUnaryExpr(class UnaryExpr*) = 0;
+        virtual std::any visitBinaryExpr(class BinaryExpr*) = 0;
 };
 
 class Expr {
     public:
-        virtual float accept(Visitor*) = 0;
+        virtual std::any accept(ExprVisitor*) = 0;
 };
 
-class Literal : public Expr {
+class LiteralExpr : public Expr {
     public:
-        Literal(Token token)
-        : token{token} {}
+        LiteralExpr(std::any value)
+        : value{value} {}
 
-        float accept(Visitor* visitor) override {
+        std::any accept(ExprVisitor* visitor) override {
             return visitor->visitLiteralExpr(this);
         }
-        Token& getToken() { return token; }
+        std::any& getValue() { return value; }
     private:
-        Token token;
+        std::any value;
 };
 
-class Unary : public Expr {
+class UnaryExpr : public Expr {
     public:
-        Unary(Token op, std::unique_ptr<Expr>&& right)
+        UnaryExpr(Token op, std::unique_ptr<Expr>&& right)
         : op{op}, right{std::move(right)} {}
 
-        float accept(Visitor* visitor) override {
+        std::any accept(ExprVisitor* visitor) override {
             return visitor->visitUnaryExpr(this);
         }
         Token& getOp() { return op; }
-        Expr& getRight() { return *right; }
+        std::unique_ptr<Expr>& getRight() { return right; }
     private:
         Token op;
         std::unique_ptr<Expr> right;
 };
 
-class Binary : public Expr {
+class BinaryExpr : public Expr {
     public:
-        Binary(std::unique_ptr<Expr>&& left, Token op, std::unique_ptr<Expr>&& right)
+        BinaryExpr(std::unique_ptr<Expr>&& left, Token op, std::unique_ptr<Expr>&& right)
         : left{std::move(left)}, op{op}, right{std::move(right)} {}
 
-        float accept(Visitor* visitor) override {
+        std::any accept(ExprVisitor* visitor) override {
             return visitor->visitBinaryExpr(this);
         }
-        Expr& getLeft() { return *left; }
+        std::unique_ptr<Expr>& getLeft() { return left; }
          Token& getOp() { return op; }
-        Expr& getRight() { return *right; }
+        std::unique_ptr<Expr>& getRight() { return right; }
     private:
         std::unique_ptr<Expr> left;
          Token op;
         std::unique_ptr<Expr> right;
+};
+
+class StmtVisitor {
+    public:
+        virtual std::any visitExpressionStmt(class ExpressionStmt*) = 0;
+        virtual std::any visitPrintStmt(class PrintStmt*) = 0;
+};
+
+class Stmt {
+    public:
+        virtual std::any accept(StmtVisitor*) = 0;
+};
+
+class ExpressionStmt : public Stmt {
+    public:
+        ExpressionStmt(std::unique_ptr<Expr>&& expression)
+        : expression{std::move(expression)} {}
+
+        std::any accept(StmtVisitor* visitor) override {
+            return visitor->visitExpressionStmt(this);
+        }
+        std::unique_ptr<Expr>& getExpression() { return expression; }
+    private:
+        std::unique_ptr<Expr> expression;
+};
+
+class PrintStmt : public Stmt {
+    public:
+        PrintStmt(std::unique_ptr<Expr>&& expression)
+        : expression{std::move(expression)} {}
+
+        std::any accept(StmtVisitor* visitor) override {
+            return visitor->visitPrintStmt(this);
+        }
+        std::unique_ptr<Expr>& getExpression() { return expression; }
+    private:
+        std::unique_ptr<Expr> expression;
 };
 
