@@ -1,3 +1,4 @@
+#include <any>
 #include <vector>
 #include <fstream>
 #include <sstream>
@@ -5,21 +6,21 @@
 #include <initializer_list>
 
 void defineVisitor(std::ofstream& outfile, std::string_view baseName, std::initializer_list<std::string> types) {
-    outfile << "class Visitor {\n";
+    outfile << "class " << baseName << "Visitor {\n";
     outfile << "    public:\n";
 
     for (const auto& type : types) {
         auto typeName = type.substr(0, type.find(":"));
-        outfile << "        virtual float visit" << typeName << baseName << "(class " << typeName << "*) = 0;\n";
+        outfile << "        virtual std::any visit" << typeName << baseName << "(class " << typeName << baseName << "*) = 0;\n";
     }
 
     outfile << "};\n\n";
 }
 
 void defineType(std::ofstream& outfile, std::string_view baseName, std::string_view className, std::string fieldName) {
-    outfile << "class " << className << " : public " << baseName << " {\n";
+    outfile << "class " << className << baseName << " : public " << baseName << " {\n";
     outfile << "    public:\n";
-    outfile << "        " << className << "(" << fieldName << ")\n";
+    outfile << "        " << className << baseName << "(" << fieldName << ")\n";
     outfile << "        : ";
 
     std::vector<std::string> fields;
@@ -44,23 +45,20 @@ void defineType(std::ofstream& outfile, std::string_view baseName, std::string_v
     }
     outfile << " {}\n\n";
 
-    outfile << "        float accept(Visitor* visitor) override {\n";
+    outfile << "        std::any accept(" << baseName << "Visitor* visitor) override {\n";
     outfile << "            return visitor->visit" << className << baseName << "(this);\n";
     outfile << "        }\n";
 
     for (const auto& field : fields) {
         auto pos = field.find_last_of(" ");
         auto type = field.substr(0, pos);
-        if (type.find("std::unique_ptr") != std::string::npos) {
-            type = baseName;
-        }
         auto variable = field.substr(pos + 1);
+        if (type.find("std::unique_ptr<Expr>&&") != std::string::npos) {
+            type = "std::unique_ptr<Expr>";
+        }
         variable[0] = toupper(variable[0]);
         outfile << "        " << type << "& get" << variable << "() { return ";
         variable[0] = tolower(variable[0]);
-        if (type == baseName) {
-            outfile << "*";
-        }
         outfile << variable << "; }\n";
     }
 
@@ -81,9 +79,9 @@ void defineType(std::ofstream& outfile, std::string_view baseName, std::string_v
 void defineAST(std::ofstream& outfile, std::string_view baseName, std::initializer_list<std::string> fieldList) {
     defineVisitor(outfile, baseName, fieldList);
 
-    outfile << "class Expr {\n";
+    outfile << "class " << baseName << " {\n";
     outfile << "    public:\n";
-    outfile << "        virtual float accept(Visitor*) = 0;\n";
+    outfile << "        virtual std::any accept(" << baseName << "Visitor*) = 0;\n";
     outfile << "};\n\n";
 
     for (auto& field : fieldList) {
@@ -97,17 +95,22 @@ int main() {
 
     std::ofstream outfile("../../src/expr.h");
 
-    system("pwd");
-
     outfile << "#pragma once\n\n";
     outfile << "#include <memory>\n";
+    outfile << "#include <any>\n";
     outfile << "#include \"token.h\"\n\n";
 
     defineAST(outfile, "Expr", 
         {
-            "Literal: Token token",
+            "Literal: std::any value",
             "Unary: Token op, std::unique_ptr<Expr>&& right",
             "Binary: std::unique_ptr<Expr>&& left, Token op, std::unique_ptr<Expr>&& right"
+        });
+
+    defineAST(outfile, "Stmt", 
+        {
+            "Expression: std::unique_ptr<Expr>&& expression",
+            "Print: std::unique_ptr<Expr>&& expression"
         });
 
     return 0;
